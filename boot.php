@@ -1,13 +1,13 @@
 <?php
 define('ROOT_PATH', __DIR__);
-define('ST_ROOT', dirname(dirname(__DIR__)));
+define('ST_ROOT', 'E:\www\sutil');
 define('DS', DIRECTORY_SEPARATOR);
 define('D_TIMESTAMP', time());
 define('D_DATETIME', date('Y-m-d H:i:s', D_TIMESTAMP));
 
 
 // Autoload
-require_once __DIR__ .'/ClassLoader.php';
+require_once ROOT_PATH .'/ClassLoader.php';
 ClassLoader::register();
 ClassLoader::addDirectories(array(
     'Sutil' => ST_ROOT,

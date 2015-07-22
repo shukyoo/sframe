@@ -10,7 +10,7 @@ try {
 
 } catch (\Exception $e) {
     if (DEBUG) {
-        throw $e;
+        echo $e->getMessage();
     } else {
         $router->to('404.html');
     }

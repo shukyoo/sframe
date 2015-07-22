@@ -1,4 +1,4 @@
-<?php namespace Sframe;
+<?php
 
 class ClassLoader
 {

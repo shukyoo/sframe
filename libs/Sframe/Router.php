@@ -2,13 +2,15 @@
 
 class Router
 {
-    protected $_app_path = '';
+    public $app_path = '';
     
     public $uri = '';
     public $uri_base = '';
     public $uri_script = '';
     public $uri_path = '';
     public $uri_query = '';
+
+    public $controller = 'home';
 
     protected static $_app_domains = [];
 
@@ -19,12 +21,13 @@ class Router
 
     public function __construct($app_path)
     {
-        $this->_app_path = rtrim($app_path, '/');
+        $this->app_path = rtrim($app_path, '/');
 
         $this->uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
         $this->uri_script = filter_has_var(INPUT_SERVER, 'SCRIPT_NAME') ? filter_input(INPUT_SERVER, 'SCRIPT_NAME') : filter_input(INPUT_SERVER, 'PHP_SELF');
         $this->uri_base = rtrim(dirname($this->uri_script), '\\/');
 
+        $this->uri_path = $this->uri;
         if (($poz = strpos($this->uri, '?')) !== false) {
             $this->uri_query = substr($this->uri, $poz + 1);
             $this->uri_path = substr($this->uri, 0, $poz);
@@ -46,10 +49,10 @@ class Router
      */
     public function dispatch()
     {
-        $uri_path_arr = explode('/', $this->uri_path);
-        $controller = empty($uri_path_arr[0]) ? 'home' : strtolower($uri_path_arr[0]);
-        $controller = ucfirst($controller) . 'Controller';
-        $controller_file = "{$this->_app_path}/controllers/{$controller}.php";
+        $uri_path_arr = explode('/', strtolower($this->uri_path));
+        empty($uri_path_arr[0]) || $this->controller = $uri_path_arr[0];
+        $controller = ucfirst($this->controller) . 'Controller';
+        $controller_file = "{$this->app_path}/controllers/{$controller}.php";
         if (!is_file($controller_file)) {
             throw new \Exception("Invalid controller {$controller}");
         }
@@ -58,7 +61,32 @@ class Router
         if (!$class instanceof Controller) {
             throw new \Exception("{$controller} must extends \\Sframe\\Controller");
         }
-        $class->act();
+
+        // Call action
+        $action = 'index';
+        $args = [];
+        if (!empty($uri_path_arr[1])) {
+            $route = $class->route($uri_path_arr);
+            if (empty($route)) {
+                $action = $uri_path_arr[1];
+            } else {
+                if (is_string($route)) {
+                    $action = $route;
+                } else {
+                    $action = $route[0];
+                    empty($route[1]) || $args = $route[1];
+                }
+            }
+        }
+        $action = 'act'. ucfirst($action);
+        if (!method_exists($class, $action)) {
+            throw new \Exception("{$action} not exists in {$controller}");
+        }
+        if (empty($args)) {
+            $class->$action();
+        } else {
+            call_user_func_array([$class, $action], $args);
+        }
     }
 
     /**
@@ -79,6 +107,5 @@ class Router
         header("Location: {$this->route($uri, $app)}");
         exit;
     }
-
 
 }
