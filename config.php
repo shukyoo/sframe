@@ -1,5 +1,5 @@
 <?php
-define('DEBUG', 1);
+define('IN_DEV', true);
 
 \Sutil\Database\DB::config(array(
     'driver' => 'mysql',

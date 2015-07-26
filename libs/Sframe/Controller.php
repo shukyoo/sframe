@@ -4,6 +4,9 @@ abstract class Controller
 {
     public $router = null;
 
+    protected $_in_dev = false;
+    protected $_locale;
+
     public function __construct(\Sframe\Router $router)
     {
         $this->router = $router;
@@ -23,8 +26,14 @@ abstract class Controller
         $this->router->to($uri, $app);
     }
 
-    public function render()
+    /**
+     * @return \Sutil\View\View
+     */
+    public function template($template)
     {
-
+        return (new \Sutil\View\View("{$this->router->app_path}/views", array(
+            'in_dev' => $this->_in_dev,
+            'locale' => $this->_locale
+        )))->template($template);
     }
 }

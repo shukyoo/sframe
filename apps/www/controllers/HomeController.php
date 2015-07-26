@@ -1,6 +1,6 @@
 <?php
 
-class HomeController extends \Sframe\Controller
+class HomeController extends BaseController
 {
 
     public function route($path_arr)

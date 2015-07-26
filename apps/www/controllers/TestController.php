@@ -1,20 +1,18 @@
 <?php
 
-class TestController extends \Sframe\Controller
+class TestController extends BaseController
 {
-    public function init()
-    {
-        echo 'test -- ';
-    }
-
     public function actIndex()
     {
         echo 'index';
     }
 
+
     public function actTest()
     {
-        echo 'test';
+        $a = 11;
+
+        include $this->template('test/hello');
     }
 }
 

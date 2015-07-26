@@ -16,7 +16,7 @@ ClassLoader::addDirectories(array(
 
 
 require ROOT_PATH .'/config.php';
-defined('DEBUG') || define('DEBUG', 0);
+defined('IN_DEV') || define('IN_DEV', false);
 
 
 
