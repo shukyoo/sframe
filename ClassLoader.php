@@ -1,4 +1,4 @@
-<?php
+<?php namespace Sframe;
 
 class ClassLoader
 {
@@ -14,12 +14,12 @@ class ClassLoader
     public static function load($class)
     {
         $class = ltrim($class, '\\');
-        foreach (static::$_directories as $k => $directory) {
-            if (strpos($class, $k) === 0) {
-                $class = str_replace(array('\\', '_'), DIRECTORY_SEPARATOR, strstr($class, '\\')) . '.php';
-                if (file_exists($path = $directory . $class)) {
-                    require_once $path;
-                }
+        $class = str_replace(array('\\', '_'), DIRECTORY_SEPARATOR, $class) . '.php';
+
+        foreach (static::$_directories as $directory) {
+            $directory = rtrim($directory, '/');
+            if (file_exists($path = $directory . DIRECTORY_SEPARATOR . $class)) {
+                require_once $path;
             }
         }
     }
@@ -32,7 +32,7 @@ class ClassLoader
     public static function register()
     {
         if (!static::$_registered) {
-            static::$_registered = spl_autoload_register(array('ClassLoader', 'load'));
+            static::$_registered = spl_autoload_register(array('\\Sframe\\ClassLoader', 'load'));
         }
     }
 

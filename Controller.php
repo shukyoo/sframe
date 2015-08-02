@@ -4,7 +4,7 @@ abstract class Controller
 {
     public $router = null;
 
-    protected $_in_dev = false;
+    protected $_env = ENV_PROD;
     protected $_locale;
 
     public function __construct(\Sframe\Router $router)
@@ -32,7 +32,7 @@ abstract class Controller
     public function template($template)
     {
         return (new \Sutil\View\View("{$this->router->app_path}/views", array(
-            'in_dev' => $this->_in_dev,
+            'recompile' => ($this->_env == ENV_DEV),
             'locale' => $this->_locale
         )))->template($template);
     }

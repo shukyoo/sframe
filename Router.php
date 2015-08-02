@@ -66,17 +66,8 @@ class Router
         $action = 'index';
         $args = [];
         if (!empty($uri_path_arr[1])) {
-            $route = $class->route($uri_path_arr);
-            if (empty($route)) {
-                $action = $uri_path_arr[1];
-            } else {
-                if (is_string($route)) {
-                    $action = $route;
-                } else {
-                    $action = $route[0];
-                    empty($route[1]) || $args = $route[1];
-                }
-            }
+            $route = $class->route($uri_path_arr, $args);
+            $action = $route ?: $uri_path_arr[1];
         }
         $action = 'act'. ucfirst($action);
         if (!method_exists($class, $action)) {
