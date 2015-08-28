@@ -42,6 +42,15 @@ class Router
         $this->uri_path = preg_replace('/\/+/', '/', trim($this->uri_path, '/'));
     }
 
+    /**
+     * Set default controller
+     */
+    public function setDefaultController($controller)
+    {
+        $this->controller = strtolower(trim($controller));
+        return $this;
+    }
+
 
     /**
      * Dispatch route
@@ -52,7 +61,7 @@ class Router
         $uri_path_arr = explode('/', strtolower($this->uri_path));
         empty($uri_path_arr[0]) || $this->controller = $uri_path_arr[0];
         $controller = ucfirst($this->controller) . 'Controller';
-        $controller_file = "{$this->app_path}/controllers/{$controller}.php";
+        $controller_file = "{$this->app_path}/controller/{$controller}.php";
         if (!is_file($controller_file)) {
             throw new \Exception("Invalid controller {$controller}");
         }
@@ -69,7 +78,8 @@ class Router
             $route = $class->route($uri_path_arr, $args);
             $action = $route ?: $uri_path_arr[1];
         }
-        $action = 'act'. ucfirst($action);
+        $action = str_replace('-', '', ucwords($action, '-'));
+        $action = "act{$action}";
         if (!method_exists($class, $action)) {
             throw new \Exception("{$action} not exists in {$controller}");
         }
