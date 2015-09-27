@@ -3,43 +3,44 @@
 class Router
 {
     public $app_path = '';
-    
-    public $uri = '';
-    public $uri_base = '';
-    public $uri_script = '';
-    public $uri_path = '';
-    public $uri_query = '';
-
     public $controller = 'home';
 
-    protected static $_app_domains = [];
 
-    public static function config($app_domains)
+    public static function uri()
     {
-        self::$_app_domains = $app_domains;
+        return filter_input(INPUT_SERVER, 'REQUEST_URI');
     }
+
+    public static function script()
+    {
+        return filter_has_var(INPUT_SERVER, 'SCRIPT_NAME') ? filter_input(INPUT_SERVER, 'SCRIPT_NAME') : filter_input(INPUT_SERVER, 'PHP_SELF');
+    }
+
+    public static function base()
+    {
+        return rtrim(dirname(self::script()), '\\/');
+    }
+
+    public static function path()
+    {
+        $script = self::script();
+        $base = self::base();
+        $uri_path = self::uri();
+        if (($poz = strpos($uri_path, '?')) !== false) {
+            $uri_path = substr($uri_path, 0, $poz);
+        }
+        if ($script && strpos($uri_path, $script) === 0) {
+            $uri_path = substr($uri_path, strlen($script));
+        } elseif ($base && strpos($uri_path, $base) === 0) {
+            $uri_path = substr($uri_path, strlen($base));
+        }
+        return preg_replace('/\/+/', '/', trim($uri_path, '/'));
+    }
+
 
     public function __construct($app_path)
     {
         $this->app_path = rtrim($app_path, '/');
-
-        $this->uri = filter_input(INPUT_SERVER, 'REQUEST_URI');
-        $this->uri_script = filter_has_var(INPUT_SERVER, 'SCRIPT_NAME') ? filter_input(INPUT_SERVER, 'SCRIPT_NAME') : filter_input(INPUT_SERVER, 'PHP_SELF');
-        $this->uri_base = rtrim(dirname($this->uri_script), '\\/');
-
-        $this->uri_path = $this->uri;
-        if (($poz = strpos($this->uri, '?')) !== false) {
-            $this->uri_query = substr($this->uri, $poz + 1);
-            $this->uri_path = substr($this->uri, 0, $poz);
-        }
-
-        if ($this->uri_script && strpos($this->uri_path, $this->uri_script) === 0) {
-            $this->uri_path = substr($this->uri_path, strlen($this->uri_script));
-        } elseif ($this->uri_base && strpos($this->uri_path, $this->uri_base) === 0) {
-            $this->uri_path = substr($this->uri_path, strlen($this->uri_base));
-        }
-
-        $this->uri_path = preg_replace('/\/+/', '/', trim($this->uri_path, '/'));
     }
 
     /**
@@ -58,7 +59,8 @@ class Router
      */
     public function dispatch()
     {
-        $uri_path_arr = explode('/', strtolower($this->uri_path));
+        $path = self::path();
+        $uri_path_arr = explode('/', strtolower($path));
         empty($uri_path_arr[0]) || $this->controller = $uri_path_arr[0];
         $controller = ucfirst($this->controller) . 'Controller';
         $controller_file = "{$this->app_path}/controller/{$controller}.php";
@@ -93,20 +95,9 @@ class Router
     /**
      * Get route of uri
      */
-    public function route($uri, $app = null)
+    public static function route($uri)
     {
-        $uri = trim($uri, '/');
-        $domain = ($app && !empty(self::$_app_domains[$app])) ? rtrim(self::$_app_domains[$app], '/') : '';
-        return "{$domain}{$this->uri_base}/{$uri}";
-    }
-
-    /**
-     * Route to
-     */
-    public function to($uri, $app = null)
-    {
-        header("Location: {$this->route($uri, $app)}");
-        exit;
+        return self::base() .'/'. trim($uri, '/');
     }
 
 }
