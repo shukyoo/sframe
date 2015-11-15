@@ -11,13 +11,14 @@ require __DIR__ .'/ClassLoader.php';
 \Sframe\ClassLoader::register();
 
 
-function route($uri)
+function route($uri, $params = null)
 {
-    return Sframe\Router::route($uri);
+    return Sframe\Router::route($uri, $params);
 }
 
-function to($uri)
+function redirect($uri)
 {
     header('Location: '. route($uri));
     exit;
 }
+
