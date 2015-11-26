@@ -35,7 +35,7 @@ abstract class Repository
      * @param $last_insert_id
      * @return bool
      */
-    protected function _performInsert($data, &$last_insert_id = null)
+    protected function _performInsert($data, &$last_insert_id = 0)
     {
         $this->_dataBuild($data);
         if ($this->_create_time && empty($data[$this->_create_time])) {
@@ -45,7 +45,9 @@ abstract class Repository
             $data[$this->_update_time] = $this->_datetime();
         }
         $result = $this->_table()->insert($data);
-        $last_insert_id = $this->_connection()->lastInsertId();
+        if ($result) {
+            $last_insert_id = $this->_connection()->lastInsertId();
+        }
         return $result;
     }
 
