@@ -17,7 +17,7 @@ class Request
      * @param mixed $default
      * @return mixed
      */
-    public static function request($key, $default = null)
+    public static function input($key, $default = null)
     {
         return filter_has_var(INPUT_POST, $key) ? self::post($key, $default) : self::get($key, $default);
     }
