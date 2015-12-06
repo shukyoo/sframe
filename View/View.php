@@ -17,7 +17,7 @@ class View
     // If true, it will always recompile，recommend "true" for development, "false" for production.
     protected $_recompile = false;
 
-    protected $_locale = null;
+    protected $_locale;
 
     public function __construct($view_path, $options = [])
     {
@@ -32,10 +32,34 @@ class View
         }
     }
 
+    /**
+     * @return string
+     */
+    public function getViewPath()
+    {
+        return $this->_view_path;
+    }
 
+    /**
+     * @return string
+     */
+    public function getCompiledPath()
+    {
+        $loc = $this->_locale ? "/{$this->_locale}" : '';
+        return "{$this->_view_path}/_compiled{$loc}";
+    }
+
+    /**
+     * @param string $template
+     * @return string
+     */
     public function template($template)
     {
-        $compiled_file = $this->getCompiledPath() ."/{$template}.php";
+        $template = ltrim($template, '/');
+        if (!strpos($template, '.')) {
+            $template .= '.php';
+        }
+        $compiled_file = $this->getCompiledPath() .'/'. $template;
 
         if (!is_file($compiled_file) || $this->_recompile) {
             $compiler = new Compiler($this);
@@ -44,18 +68,5 @@ class View
 
         return $compiled_file;
     }
-
-
-    public function getViewPath()
-    {
-        return $this->_view_path;
-    }
-
-    public function getCompiledPath()
-    {
-        $loc = $this->_locale ? "/{$this->_locale}" : '';
-        return "{$this->_view_path}/_compiled{$loc}";
-    }
-
 }
 
