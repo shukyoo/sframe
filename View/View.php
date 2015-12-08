@@ -1,4 +1,7 @@
 <?php namespace Sframe\View;
+
+use Sframe\Router;
+
 /**
  * 开发模式：每次运行都是重新编译，编译后的文件存在于版本库里
  * 生产模式：不检查，直接使用编译后的文件（除非编译文件不存在）
@@ -14,14 +17,20 @@ class View
 {
     protected $_view_path = '';
 
+    /**
+     * @var Router
+     */
+    protected $_router;
+
     // If true, it will always recompile，recommend "true" for development, "false" for production.
     protected $_recompile = false;
 
     protected $_locale;
 
-    public function __construct($view_path, $options = [])
+    public function __construct($view_path, Router $router, $options = [])
     {
         $this->_view_path = rtrim($view_path, '/');
+        $this->_router = $router;
 
         if (isset($options['recompile'])) {
             $this->_recompile = (bool)$options['recompile'];
@@ -47,6 +56,14 @@ class View
     {
         $loc = $this->_locale ? "/{$this->_locale}" : '';
         return "{$this->_view_path}/_compiled{$loc}";
+    }
+
+    /**
+     * get router
+     */
+    public function getRouter()
+    {
+        return $this->_router;
     }
 
     /**

@@ -2,22 +2,29 @@
 
 class Compiler
 {
-    protected $_view_path = '';
-    protected $_compiled_path = '';
+    /**
+     * @var View
+     */
+    protected $_view;
+
     protected static $_rules = array(
-        '#\{\$([a-zA-Z_].+?)\}#' => ['\Sframe\View\Plugins\Basic', 'var'],
-        '#\{\/\/\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'comment'],
-        '#\{include\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'include'],
-        '#\{trans\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'trans'],
-        '#\{escape\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'escape'],
-        '#\{if\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'if'],
-        '#\{\/if\}#' => ['\Sframe\View\Plugins\Basic', 'endIf'],
-        '#\{foreach\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'foreach'],
-        '#\{/foreach\}#' => ['\Sframe\View\Plugins\Basic', 'endForeach'],
-        '#\{for\s+(.+?)\}#' => ['\Sframe\View\Plugins\Basic', 'for'],
-        '#\{/for\}#' => ['\Sframe\View\Plugins\Basic', 'endFor'],
-        '#\{block\s+([\w-/]+)\s+(\[.+?\])\}#s' => ['\Sframe\View\Plugins\Block', 'include'],
-        '#\{block->(\w+)\}#' => ['\Sframe\View\Plugins\Block', 'var']
+        '#\{\$([a-zA-Z_].+?)\}#' => ['\Sframe\View\BasicParser', 'var'],
+        '#\{\/\/\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'comment'],
+        '#\{include\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'include'],
+        '#\{trans\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'trans'],
+        '#\{escape\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'escape'],
+        '#\{if\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'if'],
+        '#\{\/if\}#' => ['\Sframe\View\BasicParser', 'endIf'],
+        '#\{foreach\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'foreach'],
+        '#\{/foreach\}#' => ['\Sframe\View\BasicParser', 'endForeach'],
+        '#\{for\s+(.+?)\}#' => ['\Sframe\View\BasicParser', 'for'],
+        '#\{/for\}#' => ['\Sframe\View\BasicParser', 'endFor'],
+        '#\{block\s+([\w-/]+)\s+(\[.+?\])\}#s' => ['\Sframe\View\BasicParser', 'block'],
+        '#\{block->(\w+)\}#' => ['\Sframe\View\BasicParser', 'blockVar'],
+        '#\{route\s+([\w-/]+)(\s.+)?\}#' => ['\Sframe\View\BasicParser', 'route'],
+        '#\{form(\s+data=\$(\w+))?(\s+(.+?))?\}#' => ['\Sframe\View\FormParser', 'form'],
+        '#\{input\s(\w+)(\s+[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'input'],
+
     );
 
     /**
@@ -31,8 +38,15 @@ class Compiler
 
     public function __construct(View $view)
     {
-        $this->_view_path = $view->getViewPath();
-        $this->_compiled_path = $view->getCompiledPath();
+        $this->_view = $view;
+    }
+
+    /**
+     * @return View
+     */
+    public function getView()
+    {
+        return $this->_view;
     }
 
 
@@ -43,7 +57,7 @@ class Compiler
      */
     public function compile($template)
     {
-        $compiled_file = "{$this->_compiled_path}/{$template}";
+        $compiled_file = $this->_view->getCompiledPath() .'/'. $template;
         $compiled_dir = dirname($compiled_file);
         if (!is_dir($compiled_dir) && !mkdir($compiled_dir, 0755, true)) {
             throw new CompileException('Unable to create view compiled directory:'. $compiled_dir);
@@ -58,7 +72,7 @@ class Compiler
      */
     public function parse($template)
     {
-        $view_file = $this->_view_path .'/'. ltrim($template, '/');
+        $view_file = $this->_view->getViewPath() .'/'. ltrim($template, '/');
         if (!is_file($view_file)) {
             throw new CompileException('view file is not exists:'. $template);
         }
@@ -85,6 +99,9 @@ class Compiler
         static $plugins = [];
         if (!isset($plugins[$class])) {
             $plugins[$class] = new $class($this);
+            if (!$plugins[$class] instanceof ParserAbstract) {
+                throw new CompileException('invalid plugin class, it should be extends ParserAbstract');
+            }
         }
         return $plugins[$class]->$method($matches);
     }

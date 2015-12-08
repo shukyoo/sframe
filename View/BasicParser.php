@@ -1,6 +1,6 @@
-<?php namespace Sframe\View\Plugins;
+<?php namespace Sframe\View;
 
-class Basic extends PluginAbstract
+class BasicParser extends ParserAbstract
 {
     /**
      * #\{//\s+(.+?)\}#
@@ -97,4 +97,31 @@ class Basic extends PluginAbstract
     }
 
 
+    /**
+     * #\{block\s+([\w-/]+)\s+(\[.+?\])\}#s
+     * e.g. {block head ['title' => 'test']}
+     */
+    public function parseBlock($matches)
+    {
+        return '<?php $_block='. $matches[2] .'; ?>' ."\n". $this->_compiler->parse($matches[1] .'.php');
+    }
+
+    /**
+     * #\{block->(\w+)\}#
+     * e.g. {block->title}
+     */
+    public function parseBlockVar($matches)
+    {
+        return '<?php echo isset($_block[\''. $matches[1] .'\']) ? $_block[\''. $matches[1] .'\'] : \'\'; ?>';
+    }
+
+    /**
+     * #\{route\s+([\w-/]+)(\s.+)?\}#
+     * e.g. {route foo/bar a=1&b=2}
+     */
+    public function parseRoute($matches)
+    {
+        $params = empty($matches[2]) ? null : $matches[2];
+        return $this->_compiler->getView()->getRouter()->route($matches[1], $params);
+    }
 }

@@ -1,7 +1,6 @@
-<?php namespace Sframe\View\Plugins;
-use Sframe\View\Compiler;
+<?php namespace Sframe\View;
 
-abstract class PluginAbstract
+abstract class ParserAbstract
 {
     /**
      * @var Compiler
