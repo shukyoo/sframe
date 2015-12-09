@@ -23,8 +23,12 @@ class Compiler
         '#\{block->(\w+)\}#' => ['\Sframe\View\BasicParser', 'blockVar'],
         '#\{route\s+([\w-/]+)(\s.+)?\}#' => ['\Sframe\View\BasicParser', 'route'],
         '#\{form(\s+data=\$(\w+))?(\s+(.+?))?\}#' => ['\Sframe\View\FormParser', 'form'],
+        '#\{/form\}#' => ['\Sframe\View\FormParser', 'endForm'],
         '#\{input\s(\w+)(\s+[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'input'],
-
+        '#\{textarea(\s+[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'textarea'],
+        '#\{select(\s+data=(\$\w+|\[.+?\]))(\s[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'select'],
+        '#\{checkbox(\s+data=(\$\w+|\[.+?\]))(\s[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'checkbox'],
+        '#\{radio(\s+data=(\$\w+|\[.+?\]))(\s[\w\[\]]+)?(\s+.+?)?\}#' => ['\Sframe\View\FormParser', 'radio'],
     );
 
     /**
